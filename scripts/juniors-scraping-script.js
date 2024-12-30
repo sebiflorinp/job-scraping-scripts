@@ -90,8 +90,6 @@ async function scrapeData() {
             .eq('location', formattedLocations)
             .eq('experience', newJobListing.experience)
             .eq('job_type', newJobListing.job_type)
-        console.log(error)
-        console.log(data)
         if (data.length === 0) {
             const {error} = await supabase.from("Jobs").insert(newJobListing)
         }
