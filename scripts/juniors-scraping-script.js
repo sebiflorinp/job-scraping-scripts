@@ -1,74 +1,100 @@
+require('dotenv').config({path: '../.env'})
+
 const axios = require('axios')
 const cheerio = require('cheerio')
+const { createClient } = require('@supabase/supabase-js'); 
 
 async function scrapeData() {
+    // Supabase credentials
+    const supabaseKey = process.env.SUPABASE_KEY
+    const supabseUrl = process.env.SUPABASE_URL
+    const supabase = createClient(supabseUrl, supabaseKey)
+    
     // Extract the HTML from the juniors site
-    let url = 'https://www.juniors.ro/jobs?page=1'
+    let url = 'https://www.juniors.ro/jobs'
     let {data} = await axios.get(url)
     let $ = cheerio.load(data)
     
-    // Find the number of pages to scrape
-    let maxPage = 1
-    $('.pagination').find('li').each((i, el) => {
-        let pageNumberOrNothing = $(el).find('a').text()
-        if (!isNaN(pageNumberOrNothing) && Number(pageNumberOrNothing) > maxPage) {
-            maxPage = pageNumberOrNothing
-        }
-    })
-    
-    // Scrape the needed data from each page
-    for(let i = 1; i <= maxPage; i++) {
-        url = 'https://www.juniors.ro/jobs?page=' + i
-        let {data} = await axios.get(url)
-        $ = cheerio.load(data)
+    let jobs = $('.job_list').find('li.job')
+    for (let i = 0; i < jobs.length; i++) {
+        let el = jobs[i]
+            
+        let name = $(el)
+            .find('h3')
+            .text()
+            .trim()
+            .replace(/\n+/g, ' ')
+
+        let locations = $(el)
+            .find('div.job_header_title strong')
+            .text()
+            .trim()
+            .replace(/\s{2,}/g, ' ')
+            .split('|')
+            .slice(0, -1)
+            .map(location => location.trim())
+
+        let company = $(el)
+            .find('.job_requirements li')
+            .eq(0)
+            .text()
+            .trim()
+            .replace(/\s{2,}/g, ' ')
+            .replace('Companie: ', '')
+
+        let experience = $(el)
+            .find('.ms-5 li')
+            .eq(0)
+            .text()
+            .trim()
+            .replace(/\s{2,}/g, ' ')
+            .replace('Experiență solicitată: ', '')
+
+        let jobType = $(el)
+            .find('.ms-5 li')
+            .eq(1)
+            .text()
+            .trim()
+            .replace(/\s{2,}/g, ' ')
+            .replace('Tip ofertă: ', '')
+
+        let detailsLink = $(el)
+            .find('div.job_header_buttons a')
+            .eq(1)
+            .attr('href')
+
+        const today = new Date();
+        const day = today.getDate();
+        const month = today.getMonth() + 1;
+        const year = today.getFullYear();
+        const formattedDate = `${year}-${month}-${day}`;
         
-        $('.job_list').find('li.job').each((i, el) => {
-            let name = $(el).find('h3')
-                            .text()
-                            .replace(/\n+/g, ' ')
-            
-            let locations = $(el).find('div.job_header_title strong')
-                                 .text()
-                                 .trim()
-                                 .replace(/\s{2,}/g, ' ')
-                                 .split('|')
-                                 .slice(0, -1)
-                                 .map(location => location.trim())
-            
-            let tags = []
-            $(el).find('.job_tags li a').each((i, el) => {
-                tags.push($(el).text())
-            })
-            
-            let company = $(el).find('.job_requirements li')
-                               .eq(0)
-                               .text()
-                               .trim()
-                               .replace(/\s{2,}/g, ' ')
-                               .replace('Companie: ', '')
-            
-            let experience = $(el).find('.ms-5 li')
-                                  .eq(0)
-                                  .text()
-                                  .trim()
-                                  .replace(/\s{2,}/g, ' ')
-                                  .replace('Experiență solicitată: ', '') 
-            
-            let jobType = $(el).find('.ms-5 li')
-                               .eq(1)
-                               .text()
-                               .trim()
-                               .replace(/\s{2,}/g, ' ')
-                               .replace('Tip ofertă: ', '') 
-            
-            console.log(name)
-            console.log(locations);
-            console.log(tags)
-            console.log(company)
-            console.log(experience)
-            console.log(jobType)
-            
-        })
+        const newJobListing = {
+            name: name, 
+            location: locations, 
+            company: company, 
+            experience: experience, 
+            source: "Juniors.ro", 
+            found_at: formattedDate,
+            details: detailsLink,
+            job_type: jobType
+        }
+
+        // Check if the job exists already
+        const formattedLocations = `{${newJobListing.location.map(item => `"${item}"`).join(",")}}`;
+        
+        const {data, error} = await supabase
+            .from("Jobs")
+            .select()
+            .eq('name', newJobListing.name)
+            .eq('location', formattedLocations)
+            .eq('experience', newJobListing.experience)
+            .eq('job_type', newJobListing.job_type)
+        console.log(error)
+        console.log(data)
+        if (data.length === 0) {
+            const {error} = await supabase.from("Jobs").insert(newJobListing)
+        }
     }
 }
 
