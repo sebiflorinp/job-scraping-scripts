@@ -2,7 +2,8 @@ require('dotenv').config({path: '../.env'})
 
 const axios = require('axios')
 const cheerio = require('cheerio')
-const { createClient } = require('@supabase/supabase-js'); 
+const { createClient } = require('@supabase/supabase-js');
+const convertRomanianSpecialChars = require('./convertRomanianSpecialChars.js')
 
 async function scrapeData() {
     // Supabase credentials
@@ -30,9 +31,10 @@ async function scrapeData() {
             .text()
             .trim()
             .replace(/\s{2,}/g, ' ')
-            .split('|')
+            .replace(/\s*\|\s*/g, ', ')
+            .split(', ')
             .slice(0, -1)
-            .map(location => location.trim())
+            .map(location => convertRomanianSpecialChars(location.trim()))
 
         let company = $(el)
             .find('.job_requirements li')
@@ -57,6 +59,7 @@ async function scrapeData() {
             .trim()
             .replace(/\s{2,}/g, ' ')
             .replace('Tip ofertă: ', '')
+            .replace("Intern", "Internship")
 
         let detailsLink = $(el)
             .find('div.job_header_buttons a')
@@ -79,6 +82,8 @@ async function scrapeData() {
             details: detailsLink,
             job_type: jobType
         }
+        
+        console.log(newJobListing)
 
         // Check if the job exists already
         const formattedLocations = `{${newJobListing.location.map(item => `"${item}"`).join(",")}}`;
@@ -95,5 +100,7 @@ async function scrapeData() {
         }
     }
 }
+
+
 
 scrapeData()

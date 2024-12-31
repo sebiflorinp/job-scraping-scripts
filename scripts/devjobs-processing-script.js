@@ -1,5 +1,6 @@
 require('dotenv').config({path:"../.env"})
 const axios = require('axios')
+const convertRomanianSpecialChars = require('./convertRomanianSpecialChars.js')
 const {createClient} = require("@supabase/supabase-js");
 
 async function processData() {
@@ -29,6 +30,7 @@ async function processData() {
             .eq('location', formattedLocations)
             .eq('experience', newJobListing.experience)
             .eq('job_type', newJobListing.job_type)
+        console.log(newJobListing)
         
         if (data.length === 0) {
             const {error} = await supabase.from("Jobs").insert(newJobListing)
@@ -41,7 +43,7 @@ function createJobListing(name, workplace, city, company, experience, jobUrl) {
     if (workplace === "remote") {
         formattedLocations.push("Remote")
     } else {
-        formattedLocations.push(city)
+        formattedLocations.push(convertRomanianSpecialChars(city))
     }
     
     let formattedExperience;
@@ -68,6 +70,7 @@ function createJobListing(name, workplace, city, company, experience, jobUrl) {
     return {
         name: name,
         location: formattedLocations,
+        company: company,
         experience: formattedExperience,
         source: "devjobs.ro",
         found_at: formattedDate,

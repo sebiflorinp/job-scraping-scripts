@@ -2,6 +2,7 @@ require('dotenv').config({path: '../.env'})
 
 const axios = require('axios')
 const cheerio = require('cheerio')
+const convertRomanianSpecialChars = require('./convertRomanianSpecialChars.js')
 const puppeteer = require('puppeteer');
 const {createClient} = require("@supabase/supabase-js");
 
@@ -67,7 +68,7 @@ function createNewJobListing(jobName, company, locations, detailsLink, experienc
         locationToFormat = locationToFormat.replace("și alte  orașe", "").trim();
         locationToFormat = locationToFormat.replace("și alte orașe", "").trim();
         locationToFormat = locationToFormat.replace(" (de acasă)", "").trim()
-        return locationToFormat
+        return convertRomanianSpecialChars(locationToFormat)
     })
     formattedLocations = formattedLocations.filter(location => location !== "Strainatate")
     
