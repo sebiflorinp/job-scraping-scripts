@@ -51,6 +51,7 @@ async function scrapeData() {
             .trim()
             .replace(/\s{2,}/g, ' ')
             .replace('Experiență solicitată: ', '')
+            .trim()
 
         let jobType = $(el)
             .find('.ms-5 li')
@@ -59,7 +60,7 @@ async function scrapeData() {
             .trim()
             .replace(/\s{2,}/g, ' ')
             .replace('Tip ofertă: ', '')
-            .replace("Intern", "Internship")
+            .replace("\bIntern\b", "Internship")
 
         let detailsLink = $(el)
             .find('div.job_header_buttons a')

@@ -2,16 +2,16 @@
   "name": "job-scraping-scripts",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@supabase/supabase-js": "^2.47.10",
     "axios": "^1.7.9",
     "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "punycode": "^2.3.1",
     "puppeteer": "^23.11.1",
     "puppeteer-core": "^23.11.1"
   }
