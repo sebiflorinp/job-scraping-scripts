@@ -56,6 +56,15 @@ jobs:
               lsb-release \
               wget \
               xdg-utils \
+      - name: 'Create env file'
+        run: |
+          touch .env
+          echo SUPABASE_URL=${{ secrets.SUPABASE_URL }} >> .env
+          echo SUPABASE_KEY=${{ secrets.SUPABASE_KEY }} >> .env
+          echo DEVJOBS_LINK=${{ secrets.DEVJOBS_LINK }} >> .env
+          echo EJOBS_LINK=${{ secrets.EJOBS_LINK }} >> .env
+          echo JUNIORS_LINK=${{ secrets.JUNIORS_LINK }} >> .env
+          cat .env
       - name: Run Devjobs script
         run: node ./scripts/devjobs-processing-script.js 
       - name: Run Juniors script
