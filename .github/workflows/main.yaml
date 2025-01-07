@@ -64,11 +64,15 @@ jobs:
           DEVJOBS_LINK: ${{ secrets.DEVJOBS_LINK }}
           EJOBS_LINK: ${{ secrets.EJOBS_LINK }}
           JUNIORS_LINK: ${{ secrets.JUNIORS_LINK }}
-        run: node ./scripts/devjobs-processing-script.js 
-      - name: Run Juniors script
-        run: node ./scripts/juniors-scraping-script.js 
-      - name: Run Ejobs script with timeout
-        run: timeout 60s node ./scripts/ejobs-scraping-script.js || echo "Ejobs script timed out after 1 minute"
+        run: | 
+          echo "Running devjobs script..."
+          node ./scripts/devjobs-processing-script.js
+          
+          echo "Running juniors script..."
+          node ./scripts/juniors-scraping-script.js 
+          
+          echo "Running ejobs script..."
+          timeout 60s node ./scripts/ejobs-scraping-script.js || echo "Ejobs script timed out after 1 minute"
 
 
         
