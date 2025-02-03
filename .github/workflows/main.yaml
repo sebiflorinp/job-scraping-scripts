@@ -72,7 +72,7 @@ jobs:
           node ./scripts/juniors-scraping-script.js 
           
           echo "Running ejobs script..."
-          timeout 60s node ./scripts/ejobs-scraping-script.js || echo "Ejobs script timed out after 1 minute"
+          timeout 30s node ./scripts/ejobs-scraping-script.js || echo "Ejobs script timed out after 1 minute"
 
 
         
